@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy the Bird</title>
+
+    <style>
+        body {
+            padding:0;
+            margin:0;
+            overflow:hidden;
+        }
+        h2 {
+            position:absolute;
+            z-index:5;
+        }
+        #bird {
+            position:absolute;
+            border:1px solid black;
+            border-radius:100%;
+            width:30px;
+            height:20px;
+            background-color:yellow;
+            left:150px;
+            top:100px;
+            z-index:3;
+        }
+        #bird-eye {
+            position:relative;
+            border:1px solid black;
+            width:15%;
+            height:15%;
+            left:60%;
+            top:15%;
+            border-radius:100%;
+            background-color:black;
+        }
+        #bird-beak {
+            position:relative;
+            width:0px;
+            height:0px;
+            border-top:5px solid transparent;
+            border-bottom:5px solid transparent;
+            border-left:10px solid orange;
+            left:95%;
+        }
+        #bird-wing {
+            position:relative;
+            width:0px;
+            height:0px;
+            border-left:9px solid transparent;
+            border-right:9px solid transparent;
+            border-top:9px solid orange;
+            border-bottom:9px solid transparent;
+            top:-25%;
+            left:5%;
+        }
+        #floor {
+            position:absolute;
+            top:700px;
+            border-top:2px solid black;
+            width:100%;
+        }
+        #floor-under {
+            position:fixed;
+            background-color:rgb(133, 133, 46);
+            border:0px solid transparent;
+            width:100%;
+            height:100%;
+        }
+        #sky {
+            position:fixed;
+            background-color:lightblue;
+            border:0px solid transparent;
+            width:100%;
+            height:100%;
+        }
+        #pipe {
+            position:absolute;
+            border:2px solid black;
+            width:70px;
+            background-color:green;
+            z-index:4;
+        }
+        #pipe2 {
+            position:absolute;
+            border:2px solid black;
+            width:70px;
+            height:100%;
+            background-color:green;
+            z-index:4;
+        }
+        #pipe-top {
+            position:relative;
+            width:90px;
+            border:2px solid black;
+            height:20px;
+            background-color:green;
+            top:100%;
+            left:-12px;
+        }
+        #pipe-bot {
+            position:relative;
+            width:90px;
+            border:2px solid black;
+            height:20px;
+            background-color:green;
+            top:-10px;
+            left:-12px;
+        }
+        #sun {
+            position:absolute;
+            width:70px;
+            height:70px;
+            border:2px solid transparent;
+            border-radius:100%;
+            background-color:yellow;
+        }
+        #cloud {
+            width:250px;
+            height:90px;
+            border-radius:100%;
+            position:absolute;
+            background-color:gray;
+            z-index:1;
+        }
+        #cloud:after,#cloud:before {
+            content:'';
+            position:absolute;
+            background-color:gray;
+        }
+        #cloud:after {
+            width:90px;
+            height:90px;
+            top:-25px;
+            right:35px;
+            border-radius:100px;
+        }
+        #cloud:before {
+            width:100px;
+            height:100px;
+            top:-40px;
+            left:45px;
+            border-radius:100px;
+        }
+    </style>
+    <script>
+        let vel=3
+        let sunExists=false
+        let background=[]
+        let score=0
+        let pipes=[]
+        let grav=4
+        let unActive=true
+        let up=false
+        let pos=100
+        let booster=15
+        let spawn
+        let bird
+        function buttonPress() {
+            up=true
+            Rboost=setTimeout(boostEnd,210)
+            if (unActive) {
+                for (let i=1; i<=pipes.length; ++i) {
+                    pipes[i-1].remove()
+                }
+                for (let i=1; i<=background.length; ++i) {
+                    background[i-1].remove()
+                }
+                document.getElementById('score').innerHTML=0
+                background.length=0
+                pipes.length=0
+                requestAnimationFrame(pipeSpawner)
+                window.requestAnimationFrame(mover)
+                window.requestAnimationFrame(pipeMover)
+                window.requestAnimationFrame(randomBackgroundItemsMover)
+                unActive=false
+                document.getElementById('header').hidden=true
+                document.getElementById('failTXT').hidden=true
+                bird=document.getElementById('bird')
+            }
+            if (RNG(0,30)==0) {randomBackgroundItems()}
+        }
+        function RNG(min, max) {
+            min=Math.ceil(min)
+            max=Math.floor(max)
+            return Math.floor(Math.random()*(max-min+1))+min
+        }
+        function mover() {
+            if (up) {
+                pos=pos-booster
+                booster=booster/1.1
+            } else {
+                pos=pos+grav
+                if (grav<7) {
+                    grav=grav*1.005
+                }
+            }
+            bird.style.top=`${pos}px`
+            loop=window.requestAnimationFrame(mover)
+            if (pos>=678) {fail()}
+        }
+        function boostEnd() {
+            up=false
+            booster=15
+            grav=4
+            clearTimeout(Rboost)
+        }
+        function fail() {
+            window.cancelAnimationFrame(loop)
+            window.cancelAnimationFrame(backgroundLoop)
+            window.cancelAnimationFrame(pipeLoop)
+            clearInterval(loopPipe)
+            document.getElementById('failTXT').hidden=false
+            grav=4
+            unActive=true
+            up=false
+            pos=100
+            booster=15
+            spawn=window.innerWidth+10
+            unActive=true
+            score=0;
+            sunExists=false
+        }
+        function pipeSpawner() {
+            spawn=window.innerWidth+10
+            let height=RNG(20,530)
+            let pipe=document.createElement('div')
+            let pipeTop=document.createElement('div')
+            pipe.setAttribute('id','pipe')
+            pipeTop.setAttribute('id','pipe-top')
+            pipe.style.height=height+'px'
+            document.body.appendChild(pipe)
+            pipe.appendChild(pipeTop)
+            pipe.style.left=spawn+'px'
+            // bot pipe
+            let botPipe=document.createElement('div')
+            let botPipeTop=document.createElement('div')
+            botPipe.setAttribute('id','pipe2')
+            botPipeTop.setAttribute('id','pipe-bot')
+            botPipe.style.top=height+180+'px'
+            document.body.appendChild(botPipe)
+            botPipe.appendChild(botPipeTop)
+            botPipe.style.left=spawn+'px'
+            pipes.unshift(pipe,botPipe)
+            loopPipe=setTimeout(function() {
+                window.requestAnimationFrame(pipeSpawner)
+            },2000)
+        }
+        function pipeMover() {
+            pipeLoop=window.requestAnimationFrame(pipeMover)
+            for (let i=1; i<=pipes.length; ++i) {
+                let pipePos=parseInt(pipes[i-1].style.left)
+                if (pipePos<=-90) {
+                    pipes[i-1].remove()
+                    pipes[i].remove()
+                    pipes.pop()
+                    pipes.pop()
+                } else {pipes[i-1].style.left=pipePos-vel+'px'}
+                if (i%2==0 && pipePos<=185 && pipePos>=100) {
+                    if (parseInt(pipes[i-1].style.top)-25<=pos 
+                    || parseInt(pipes[i-1].style.top)-160>=pos) {
+                        fail()
+                    } else {++score; document.getElementById('score').innerHTML=score}
+                }
+            }
+        }
+        function randomBackgroundItems () {
+            let randomItm=document.createElement('div')
+            if (RNG(1,2)==1 && !sunExists) {
+                randomItm.setAttribute('id','sun')
+                sunExists=true
+            } else {
+                randomItm.setAttribute('id','cloud')
+            }
+            randomItm.style.left=spawn+50+'px'
+            randomItm.style.top=RNG(-10,300)+'px'
+            background.unshift(randomItm)
+            document.body.appendChild(randomItm)
+        }
+        function randomBackgroundItemsMover () {
+            backgroundLoop=window.requestAnimationFrame(randomBackgroundItemsMover)
+            for (let i=1; i<=background.length; ++i) {
+                let backPos=parseInt(background[i-1].style.left)
+                if (backPos<=-300) {
+                    background[i-1].remove()
+                    background.pop()
+                } else {background[i-1].style.left=--backPos+'px'}
+            }
+        }
+    </script>
+</head>
+<body onkeydown="buttonPress()">
+    <h1 style=position:fixed id="header">DO NOT remove this element's id, or the program stops working</h1>
+    <div id="sky"></div>
+    <Div id="bird">
+        <div id="bird-eye"></div>
+        <div id="bird-beak"></div>
+        <div id="bird-wing"></div>
+    </div>
+    <div id=floor>
+        <div id="floor-under"></div>
+        <h2 hidden id="failTXT">Press any key to restart</h2>
+        <h2 style="top:20px">score:<i id="score">0</i></h2>
+    </div>
+</body>
+</html>
