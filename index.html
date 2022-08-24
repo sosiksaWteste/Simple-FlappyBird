@@ -8,9 +8,13 @@
 
     <style>
         body {
+            cursor:none;
             padding:0;
             margin:0;
             overflow:hidden;
+            -moz-user-select:none;
+            -webkit-user-select:none;
+            user-select:none;
         }
         h2 {
             position:absolute;
@@ -147,6 +151,7 @@
         }
     </style>
     <script>
+        let angle=0
         let vel=3
         let sunExists=false
         let background=[]
@@ -173,6 +178,7 @@
                 background.length=0
                 pipes.length=0
                 requestAnimationFrame(pipeSpawner)
+                window.requestAnimationFrame(rotator)
                 window.requestAnimationFrame(mover)
                 window.requestAnimationFrame(pipeMover)
                 window.requestAnimationFrame(randomBackgroundItemsMover)
@@ -182,7 +188,7 @@
                 bird=document.getElementById('bird')
             }
             if (RNG(0,30)==0) {randomBackgroundItems()}
-        }
+            }
         function RNG(min, max) {
             min=Math.ceil(min)
             max=Math.floor(max)
@@ -212,6 +218,7 @@
             window.cancelAnimationFrame(loop)
             window.cancelAnimationFrame(backgroundLoop)
             window.cancelAnimationFrame(pipeLoop)
+            window.cancelAnimationFrame(rotate)
             clearInterval(loopPipe)
             document.getElementById('failTXT').hidden=false
             grav=4
@@ -221,8 +228,9 @@
             booster=15
             spawn=window.innerWidth+10
             unActive=true
-            score=0;
+            score=0
             sunExists=false
+            angle=0
         }
         function pipeSpawner() {
             spawn=window.innerWidth+10
@@ -289,6 +297,12 @@
                     background.pop()
                 } else {background[i-1].style.left=--backPos+'px'}
             }
+        }
+        function rotator() {
+            if (up && angle>=-40) {angle=angle-15}
+            if (!up && angle<=20) {angle=angle+4}
+            bird.style.transform=`rotate(${angle}deg)`
+            rotate=window.requestAnimationFrame(rotator)
         }
     </script>
 </head>
