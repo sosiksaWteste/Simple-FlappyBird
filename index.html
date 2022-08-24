@@ -200,9 +200,7 @@
                 booster=booster/1.1
             } else {
                 pos=pos+grav
-                if (grav<7) {
-                    grav=grav*1.005
-                }
+                grav=grav*1.009
             }
             bird.style.top=`${pos}px`
             loop=window.requestAnimationFrame(mover)
