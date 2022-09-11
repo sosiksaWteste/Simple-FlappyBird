@@ -295,7 +295,7 @@
             randomItm.style.left=spawn+50+'px'
             randomItm.style.top=RNG(-10,300)+'px'
             background.unshift(randomItm)
-            document.body.appendChild(randomItm)
+            document.getElementById('world').appendChild(randomItm)
         }
         function randomBackgroundItemsMover () {
             backgroundLoop=window.requestAnimationFrame(randomBackgroundItemsMover)
