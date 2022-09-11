@@ -8,6 +8,7 @@
 
     <style>
         body {
+            background-color:black;
             cursor:none;
             padding:0;
             margin:0;
@@ -15,6 +16,7 @@
             -moz-user-select:none;
             -webkit-user-select:none;
             user-select:none;
+            z-index:-55;
         }
         h2 {
             position:absolute;
@@ -62,7 +64,7 @@
             left:5%;
         }
         #floor {
-            position:absolute;
+            position:relative;
             top:700px;
             border-top:2px solid black;
             width:100%;
@@ -70,21 +72,20 @@
         #floor-under {
             position:fixed;
             background-color:rgb(133, 133, 46);
-            border:0px solid transparent;
             width:100%;
-            height:100%;
+            height:500px;
         }
         #sky {
-            position:fixed;
+            position:absolute;
             background-color:lightblue;
-            border:0px solid transparent;
             width:100%;
-            height:100%;
+            height:700px;
         }
         #pipe {
             position:absolute;
             border:2px solid black;
             width:70px;
+            top:-5px;
             background-color:green;
             z-index:4;
         }
@@ -92,7 +93,6 @@
             position:absolute;
             border:2px solid black;
             width:70px;
-            height:100%;
             background-color:green;
             z-index:4;
         }
@@ -151,6 +151,7 @@
         }
     </style>
     <script>
+        const spawn=screen.width+50
         let angle=0
         let vel=3
         let sunExists=false
@@ -162,12 +163,23 @@
         let up=false
         let pos=100
         let booster=15
-        let spawn
         let bird
+        window.addEventListener('resize',rescale)
+        function rescale() {
+            let scale=1
+            let floorScale=700
+            const height=800
+            if (window.innerHeight<700) {
+                scale=window.innerHeight/height
+            } else {scale=1 }
+            document.getElementById('world').style.transform=`scale(${scale})`
+            document.getElementById('floor').style.top=`${700*scale}px`
+        }
         function buttonPress() {
             up=true
             Rboost=setTimeout(boostEnd,210)
             if (unActive) {
+                rescale()
                 for (let i=1; i<=pipes.length; ++i) {
                     pipes[i-1].remove()
                 }
@@ -178,7 +190,7 @@
                 background.length=0
                 pipes.length=0
                 requestAnimationFrame(pipeSpawner)
-                window.requestAnimationFrame(rotator)
+                requestAnimationFrame(rotator)
                 window.requestAnimationFrame(mover)
                 window.requestAnimationFrame(pipeMover)
                 window.requestAnimationFrame(randomBackgroundItemsMover)
@@ -224,21 +236,19 @@
             up=false
             pos=100
             booster=15
-            spawn=window.innerWidth+10
             unActive=true
             score=0
             sunExists=false
             angle=0
         }
         function pipeSpawner() {
-            spawn=window.innerWidth+10
             let height=RNG(20,530)
             let pipe=document.createElement('div')
             let pipeTop=document.createElement('div')
             pipe.setAttribute('id','pipe')
             pipeTop.setAttribute('id','pipe-top')
-            pipe.style.height=height+'px'
-            document.body.appendChild(pipe)
+            pipe.style.height=height+5+'px'
+            document.getElementById('world').appendChild(pipe)
             pipe.appendChild(pipeTop)
             pipe.style.left=spawn+'px'
             // bot pipe
@@ -246,8 +256,9 @@
             let botPipeTop=document.createElement('div')
             botPipe.setAttribute('id','pipe2')
             botPipeTop.setAttribute('id','pipe-bot')
+            botPipe.style.height=`${screen.height}px`
             botPipe.style.top=height+180+'px'
-            document.body.appendChild(botPipe)
+            document.getElementById('world').appendChild(botPipe)
             botPipe.appendChild(botPipeTop)
             botPipe.style.left=spawn+'px'
             pipes.unshift(pipe,botPipe)
@@ -293,6 +304,7 @@
                 if (backPos<=-300) {
                     background[i-1].remove()
                     background.pop()
+                    if (document.getElementById('sun')==null) {sunExists=false}
                 } else {background[i-1].style.left=--backPos+'px'}
             }
         }
@@ -306,16 +318,19 @@
 </head>
 <body ontouchstart=buttonPress() onmousedown=buttonPress() onkeydown="buttonPress()">
     <h1 style=position:fixed id="header">DO NOT remove this element's id, or the program stops working</h1>
-    <div id="sky"></div>
-    <Div id="bird">
-        <div id="bird-eye"></div>
-        <div id="bird-beak"></div>
-        <div id="bird-wing"></div>
+    <div id="sky">
+        <h2 hidden id="failTXT">Press any key to restart</h2>
+        <h2 style="top:20px">score:<i id="score">0</i></h2>
     </div>
     <div id=floor>
         <div id="floor-under"></div>
-        <h2 hidden id="failTXT">Press any key to restart</h2>
-        <h2 style="top:20px">score:<i id="score">0</i></h2>
+    </div>
+    <div id="world">
+        <Div id="bird">
+            <div id="bird-eye"></div>
+            <div id="bird-beak"></div>
+            <div id="bird-wing"></div>
+        </div>
     </div>
 </body>
 </html>
